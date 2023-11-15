@@ -172,6 +172,8 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
   assert (height >= 0);
   assert (0 < maxval && maxval <= PixMax);
   // Insert your code here!
+  
+
 }
 
 /// Destroy the image pointed to by (*imgp).
