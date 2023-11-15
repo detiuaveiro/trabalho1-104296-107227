@@ -10,7 +10,7 @@
 /// 2013, 2023
 
 // Student authors (fill in below):
-// NMec:  Name:
+// NMec:107227 & 104296  Name: Diogo Manuel Carvalho Gouveia & Vítor
 // 
 // 
 // 
@@ -172,8 +172,13 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
   assert (height >= 0);
   assert (0 < maxval && maxval <= PixMax);
   // Insert your code here!
-  
-
+  Image* img =(Image*) malloc(sizeof(*img));
+  if (img==NULL){
+    errno=1;
+    errCause="Memory Allocation Failed. Image not created.";
+    return NULL;
+  }
+  //Incomplete
 }
 
 /// Destroy the image pointed to by (*imgp).
@@ -184,6 +189,7 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
 void ImageDestroy(Image* imgp) { ///
   assert (imgp != NULL);
   // Insert your code here!
+
 }
 
 
