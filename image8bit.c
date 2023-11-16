@@ -10,7 +10,7 @@
 /// 2013, 2023
 
 // Student authors (fill in below):
-// NMec:107227 & 104296  Name: Diogo Manuel Carvalho Gouveia & Vítor
+// NMec:107227 & 104296  Name: Diogo Manuel Carvalho Gouveia & Vítor Alves 
 // 
 // 
 // 
@@ -172,14 +172,30 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
   assert (height >= 0);
   assert (0 < maxval && maxval <= PixMax);
   // Insert your code here!
-  Image* img =(Image*) malloc(sizeof(*img));
+  Image img = (Image)malloc(sizeof(Image));
   if (img==NULL){
     errno=1;
     errCause="Memory Allocation Failed. Image not created.";
     return NULL;
   }
+  img->width = width;
+  img->height= height;
+  img->pixel = (uint8_t*)malloc(sizeof(uint8_t) * width * height);
+    if (img->pixel == NULL) {
+        errno = 2;
+        errCause="Memory Allocation Failed. Image not created.";
+        free(img); // Libera a memória alocada para a estrutura da imagem
+        return NULL;
+    }
+
+    // Inicializa todos os pixels com o valor preto (0)
+    for (int i = 0; i < width * height; ++i) {
+        img->pixel[i] = 0;
+    }
+
+    return img;
+
   //Incomplete
-}
 
 /// Destroy the image pointed to by (*imgp).
 ///   imgp : address of an Image variable.
