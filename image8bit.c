@@ -319,10 +319,31 @@ int ImageMaxval(Image img) { ///
 /// *min is set to the minimum gray level in the image,
 /// *max is set to the maximum.
 void ImageStats(Image img, uint8* min, uint8* max) { ///
-  assert (img != NULL);
-  // Insert your code here!
+ assert(img != NULL);
+  
+  uint8 minVal = UINT8_MAX; // Initialize minVal to maximum possible uint8 value
+  uint8 maxVal = 0; // Initialize maxVal to minimum possible uint8 value
+  
+  // Assuming img is a 2D array representing the image pixels
+  // Iterate through each pixel to find min and max values
+  for (int i = 0; i < img->height; ++i) {
+    for (int j = 0; j < img->width; ++j) {
+    uint8 pixelValue = img->pixel[i * img->width + j]; // Get the pixel value
+      
+      // Update minVal and maxVal if necessary
+      if (pixelValue < minVal) {
+        minVal = pixelValue;
+      }
+      if (pixelValue > maxVal) {
+        maxVal = pixelValue;
+      }
+    }
+  }
+  
+  // Assign the final min and max values to the pointers
+  *min = minVal;
+  *max = maxVal;
 }
-
 /// Check if pixel position (x,y) is inside img.
 int ImageValidPos(Image img, int x, int y) { ///
   assert (img != NULL);
@@ -331,8 +352,19 @@ int ImageValidPos(Image img, int x, int y) { ///
 
 /// Check if rectangular area (x,y,w,h) is completely inside img.
 int ImageValidRect(Image img, int x, int y, int w, int h) { ///
-  assert (img != NULL);
-  // Insert your code here!
+  assert(img != NULL);
+
+  int imageWidth = img->width;
+  int imageHeight = img->height;
+
+  // Calculate the coordinates of all four corners of the rectangle
+  int x2 = x + w - 1;  // Top-right corner x-coordinate
+  int y2 = y + h - 1;  // Bottom-left corner y-coordinate
+  // Check if all corners are within the image bounds
+  int allCornersInside = (x>=0 && x<imageWidth) && (x2>=0 && x2<imageWidth) && (y>=0 && y<imageHeight) && (y2>=0 && y2<imageHeight);
+  return allCornersInside;
+
+  
 }
 
 /// Pixel get & set operations
