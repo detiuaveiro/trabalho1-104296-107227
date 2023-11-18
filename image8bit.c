@@ -205,7 +205,10 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
 void ImageDestroy(Image* imgp) { ///
   assert (imgp != NULL);
   // Insert your code here!
-
+  free(&((*imgp)->pixel));
+  (*imgp)->height=0;
+  (*imgp)->width=0;
+  free(&(*imgp));
 }
 
 
