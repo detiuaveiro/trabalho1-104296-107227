@@ -196,7 +196,7 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
     return img;
 
   //Incomplete
-
+}
 /// Destroy the image pointed to by (*imgp).
 ///   imgp : address of an Image variable.
 /// If (*imgp)==NULL, no operation is performed.
