@@ -328,7 +328,7 @@ void ImageStats(Image img, uint8* min, uint8* max) { ///
   // Iterate through each pixel to find min and max values
   for (int i = 0; i < img->height; i++) {
     for (int j = 0; j<img->width;j++){
-      uint8 pixelValue = ImageGetPixel(img,i,j);
+      uint8 pixelValue = ImageGetPixel(img,j,i);
       if(pixelValue<minVal){
         minVal=pixelValue;
       }
@@ -411,6 +411,13 @@ void ImageSetPixel(Image img, int x, int y, uint8 level) { ///
 void ImageNegative(Image img) { ///
   assert (img != NULL);
   // Insert your code here!
+  for (int i=0;i<img->height;i++){
+    for(int j=0;j<img->width;j++){
+      uint8 pixelValue = ImageGetPixel(img,j,i);  //Obtain current pixel value
+      ImageSetPixel(img,j,i,UINT_MAX - pixelValue);   //By doing ImageSetPixel() using level= UINT_MAX - pixelValue, 
+                                                      //we can transform dark pixels into light pixel and vice-versa.
+    }
+  }
 }
 
 /// Apply threshold to image.
@@ -423,7 +430,7 @@ void ImageThreshold(Image img, uint8 thr) { ///
   //for cicle to obtain coords for pixel
   for (int i = 0; i < img->height; ++i) {
     for (int j = 0; j < img->width; ++j) {
-    uint8 pixelValue = img->pixel[G(img,i,j)]; // Get the pixel value
+    uint8 pixelValue = ImageGetPixel(img,j,i); // Get the pixel value
       
       // Update minVal and maxVal if necessary
       if (pixelValue < thr) {
@@ -489,7 +496,7 @@ Image ImageRotate(Image img) { ///
             int newJ = img->height - i - 1;
 
             // Transfer the pixel values from the original image to the rotated image
-            uint8 pixelValue = img->pixel[G(img,i,j)];
+            uint8 pixelValue = ImageGetPixel(img,j,i);
             rotatedImage->pixel[G(rotatedImage,newI,newJ)] = pixelValue;
         }
     }
