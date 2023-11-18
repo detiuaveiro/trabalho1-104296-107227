@@ -206,8 +206,8 @@ void ImageDestroy(Image* imgp) { ///
   assert (imgp != NULL);
   // Insert your code here!
   free(&((*imgp)->pixel));
-  (*imgp)->height=0;
-  (*imgp)->width=0;
+  (*imgp)->height=NULL;
+  (*imgp)->width=NULL;
   free(&(*imgp));
 }
 
@@ -326,16 +326,14 @@ void ImageStats(Image img, uint8* min, uint8* max) { ///
   
   // Assuming img is a 2D array representing the image pixels
   // Iterate through each pixel to find min and max values
-  for (int i = 0; i < img->height; ++i) {
-    for (int j = 0; j < img->width; ++j) {
-    uint8 pixelValue = img->pixel[i* img->width + j]; // Get the pixel value
-      
-      // Update minVal and maxVal if necessary
-      if (pixelValue < minVal) {
-        minVal = pixelValue;
+  for (int i = 0; i < img->height; i++) {
+    for (int j = 0; j<img->width;j++){
+      uint8 pixelValue = ImageGetPixel(img,i,j);
+      if(pixelValue<minVal){
+        minVal=pixelValue;
       }
-      if (pixelValue > maxVal) {
-        maxVal = pixelValue;
+      if(pixelValue>maxVal){
+        maxVal=pixelValue;
       }
     }
   }
