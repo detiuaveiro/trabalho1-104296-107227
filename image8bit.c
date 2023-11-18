@@ -328,7 +328,7 @@ void ImageStats(Image img, uint8* min, uint8* max) { ///
   // Iterate through each pixel to find min and max values
   for (int i = 0; i < img->height; ++i) {
     for (int j = 0; j < img->width; ++j) {
-    uint8 pixelValue = img->pixel[i * img->width + j]; // Get the pixel value
+    uint8 pixelValue = img->pixel[i* img->width + j]; // Get the pixel value
       
       // Update minVal and maxVal if necessary
       if (pixelValue < minVal) {
@@ -361,9 +361,7 @@ int ImageValidRect(Image img, int x, int y, int w, int h) { ///
   int x2 = x + w - 1;  // Top-right corner x-coordinate
   int y2 = y + h - 1;  // Bottom-left corner y-coordinate
   // Check if all corners are within the image bounds
-  int allCornersInside = (x>=0 && x<imageWidth) && (x2>=0 && x2<imageWidth) && (y>=0 && y<imageHeight) && (y2>=0 && y2<imageHeight);
-  return allCornersInside;
-
+  return (x>=0 && x<imageWidth) && (x2>=0 && x2<imageWidth) && (y>=0 && y<imageHeight) && (y2>=0 && y2<imageHeight);
   
 }
 
@@ -379,7 +377,7 @@ int ImageValidRect(Image img, int x, int y, int w, int h) { ///
 // The returned index must satisfy (0 <= index < img->width*img->height)
 static inline int G(Image img, int x, int y) {
   int index;
-  // Insert your code here!
+  index = y* img->width + x;
   assert (0 <= index && index < img->width*img->height);
   return index;
 }
@@ -423,7 +421,23 @@ void ImageNegative(Image img) { ///
 void ImageThreshold(Image img, uint8 thr) { ///
   assert (img != NULL);
   // Insert your code here!
+
+  //for cicle to obtain coords for pixel
+  for (int i = 0; i < img->height; ++i) {
+    for (int j = 0; j < img->width; ++j) {
+    uint8 pixelValue = img->pixel[G(img,i,j)]; // Get the pixel value
+      
+      // Update minVal and maxVal if necessary
+      if (pixelValue < thr) {
+        pixelValue = 0;
+      }
+      if (pixelValue > thr) {
+          pixelValue = UINT8_MAX;
+      }
+    }
+  }
 }
+
 
 /// Brighten image by a factor.
 /// Multiply each pixel level by a factor, but saturate at maxval.
@@ -459,7 +473,31 @@ void ImageBrighten(Image img, double factor) { ///
 /// On failure, returns NULL and errno/errCause are set accordingly.
 Image ImageRotate(Image img) { ///
   assert (img != NULL);
-  // Insert your code here!
+  int newImgWidth = img->height;
+  int  newImgHeight = img->width;
+  Image rotatedImage = ImageCreate(newImgWidth,newImgHeight,img->maxval);
+    if (rotatedImage == NULL) {
+        // Handle memory allocation failure
+        errno = ENOMEM;
+        errCause = "Memory allocation failed for rotated image.";
+        return NULL;
+    }
+
+    // Rotate the pixels by 90 degrees anti-clockwise
+    for (int i = 0; i < newImgWidth; ++i) {
+        for (int j = 0; j < newImgHeight; ++j) {
+            // Calculate the new coordinates for rotating the pixels
+            int newI = j;
+            int newJ = img->height - i - 1;
+
+            // Transfer the pixel values from the original image to the rotated image
+            uint8 pixelValue = img->pixel[G(img,i,j)];
+            rotatedImage->pixel[G(rotatedImage,newI,newJ)] = pixelValue;
+        }
+    }
+
+      
+
 }
 
 /// Mirror an image = flip left-right.
