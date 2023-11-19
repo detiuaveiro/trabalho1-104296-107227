@@ -10,7 +10,7 @@
 /// 2013, 2023
 
 // Student authors (fill in below):
-// NMec:107227 & 104296  Name: Diogo Manuel Carvalho Gouveia & Vítor Alves 
+// NMec:107227 & 104296  Name: Diogo Manuel Carvalho Gouveia & Vítor Hugo Alves 
 // 
 // 
 // 
@@ -189,20 +189,20 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
     }
 
     // Inicializa todos os pixels com o valor preto (0)
-    for (int i = 0; i < width * height; ++i) {
-        img->pixel[i] = 0;
+    for (int i = 0; i < img->height; ++i) {
+      for (int j = 0;j < img->width; ++j) {
+        ImageSetPixel(img,j,i,0); 
+      }
     }
 
     return img;
-
-  //Incomplete
-}
+  }
 /// Destroy the image pointed to by (*imgp).
 ///   imgp : address of an Image variable.
 /// If (*imgp)==NULL, no operation is performed.
 /// Ensures: (*imgp)==NULL.
 /// Should never fail, and should preserve global errno/errCause.
-void ImageDestroy(Image* imgp) { ///
+void ImageDestroy(Image* imgp){ ///
   assert (imgp != NULL);
   // Insert your code here!
   free(&((*imgp)->pixel));
@@ -381,7 +381,7 @@ static inline int G(Image img, int x, int y) {
 }
 
 /// Get the pixel (level) at position (x,y).
-uint8 ImageGetPixel(Image img, int x, int y) { ///
+uint8   ImageGetPixel(Image img, int x, int y) { ///
   assert (img != NULL);
   assert (ImageValidPos(img, x, y));
   PIXMEM += 1;  // count one pixel access (read)
@@ -414,7 +414,7 @@ void ImageNegative(Image img) { ///
   for (int i=0;i<img->height;i++){
     for(int j=0;j<img->width;j++){
       uint8 pixelValue = ImageGetPixel(img,j,i);  //Obtain current pixel value
-      ImageSetPixel(img,j,i,UINT_MAX - pixelValue);   //By doing ImageSetPixel() using level= UINT_MAX - pixelValue, 
+      ImageSetPixel(img,j,i,UINT8_MAX- pixelValue);   //By doing ImageSetPixel() using level= UINT_MAX - pixelValue, 
                                                       //we can transform dark pixels into light pixel and vice-versa.
     }
   }
@@ -481,13 +481,6 @@ Image ImageRotate(Image img) { ///
   int newImgWidth = img->height;
   int  newImgHeight = img->width;
   Image rotatedImage = ImageCreate(newImgWidth,newImgHeight,img->maxval);
-    if (rotatedImage == NULL) {
-        // Handle memory allocation failure
-        errno = ENOMEM;
-        errCause = "Memory allocation failed for rotated image.";
-        return NULL;
-    }
-
     // Rotate the pixels by 90 degrees anti-clockwise
     for (int i = 0; i < newImgWidth; ++i) {
         for (int j = 0; j < newImgHeight; ++j) {
@@ -497,12 +490,10 @@ Image ImageRotate(Image img) { ///
 
             // Transfer the pixel values from the original image to the rotated image
             uint8 pixelValue = ImageGetPixel(img,j,i);
-            rotatedImage->pixel[G(rotatedImage,newI,newJ)] = pixelValue;
+            ImageSetPixel(rotatedImage,newJ,newI,pixelValue);
         }
     }
-
-      
-
+    return rotatedImage;
 }
 
 /// Mirror an image = flip left-right.
@@ -515,6 +506,21 @@ Image ImageRotate(Image img) { ///
 Image ImageMirror(Image img) { ///
   assert (img != NULL);
   // Insert your code here!
+  
+  Image mirrorImage = ImageCreate(img->width,img->height,img->maxval);
+    // Rotate the pixels by 90 degrees anti-clockwise
+    for (int i = 0; i < img->height; ++i) {
+        for (int j = 0; j < img->width; ++j) {
+            // Calculate the new coordinates for rotating the pixels
+          
+            int newJ = img->width -1 -j;
+
+            // Transfer the pixel values from the original image to the rotated image
+            uint8 pixelValue = ImageGetPixel(img,j,i);
+            ImageSetPixel(mirrorImage,newJ,i,pixelValue);
+        }
+    }
+    return mirrorImage;
 }
 
 /// Crop a rectangular subimage from img.
@@ -533,9 +539,15 @@ Image ImageCrop(Image img, int x, int y, int w, int h) { ///
   assert (img != NULL);
   assert (ImageValidRect(img, x, y, w, h));
   // Insert your code here!
+  Image cropImage = ImageCreate(w,h,img->maxval);
+  for(int i=y-h;i<y;++i){
+    for(int j=x; j<x+w;++j){
+      uint8 pixelValue = ImageGetPixel(img,j,i);
+      ImageSetPixel(cropImage,j,i,pixelValue);
+    }
+  }
+  return cropImage;
 }
-
-
 /// Operations on two images
 
 /// Paste an image into a larger image.
@@ -547,6 +559,7 @@ void ImagePaste(Image img1, int x, int y, Image img2) { ///
   assert (img2 != NULL);
   assert (ImageValidRect(img1, x, y, img2->width, img2->height));
   // Insert your code here!
+  
 }
 
 /// Blend an image into a larger image.
