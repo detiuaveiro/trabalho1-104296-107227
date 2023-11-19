@@ -450,8 +450,9 @@ void ImageThreshold(Image img, uint8 thr) { ///
 /// darken the image if factor<1.0.
 void ImageBrighten(Image img, double factor) { ///
   assert (img != NULL);
-  // ? assert (factor >= 0.0);
+  assert (factor >= 0.0);
   // Insert your code here!
+
 }
 
 
@@ -558,7 +559,24 @@ void ImagePaste(Image img1, int x, int y, Image img2) { ///
   assert (img1 != NULL);
   assert (img2 != NULL);
   assert (ImageValidRect(img1, x, y, img2->width, img2->height));
-  // Insert your code here!
+  
+  // for cycles to go through every pixel in img1 at pos (x,y)
+  for (int i=y;i<img2->height;i++){
+    for (int j=x;j<img2->width;j++){
+      
+      //we get the pixelValues and then sum them, making sure that 0<sum<maxVal
+
+      uint8 pixelValue1 = ImageGetPixel(img1,j,i);
+      uint8 pixelValue2 = ImageGetPixel(img2,j-x,i-y);
+      uint8 level = pixelValue1 + pixelValue2;
+      if (level<0){level=0;}
+      if (level>UINT8_MAX){level=UINT8_MAX;}
+
+      //We set the pixels in the original image to these new values
+      
+      ImageSetPixel(img1,j,i,level);
+    }
+  }
   
 }
 
@@ -583,6 +601,17 @@ int ImageMatchSubImage(Image img1, int x, int y, Image img2) { ///
   assert (img2 != NULL);
   assert (ImageValidPos(img1, x, y));
   // Insert your code here!
+  Image img1_cropped = ImageCrop (img1,x,y,img2->width,img2->height);
+  for (int i=0;i<img1_cropped->height;i++){
+    for (int j=0;j<img1_cropped->width;j++){
+      uint8 pixelValue1 = ImageGetPixel(img1_cropped,j,i);
+      uint8 pixelValue2 = ImageGetPixel(img2,j,i);
+      if (pixelValue1 != pixelValue2){
+        return 0;
+      }
+    }
+  }
+  return 1;
 }
 
 /// Locate a subimage inside another image.
@@ -592,7 +621,20 @@ int ImageMatchSubImage(Image img1, int x, int y, Image img2) { ///
 int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
   assert (img1 != NULL);
   assert (img2 != NULL);
-  // Insert your code here!
+  int ny = img1->height - img2->height;   //nx and ny are the number of operations
+  int nx = img1->width - img2->width;     //we will need to run while keeping the image2
+  // Insert your code here!               inside image1
+  for (int i=0;i<ny;i++){
+    for (int j=0;j<nx;j++){
+      int r = ImageMatchSubImage(img1,j,i,img2);
+      if (r==1){
+        *px=j;
+        *py=i;
+        return *px,*py;
+      }
+    }
+  }
+  return *px,*py;
 }
 
 
