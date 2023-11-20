@@ -202,15 +202,21 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
 /// If (*imgp)==NULL, no operation is performed.
 /// Ensures: (*imgp)==NULL.
 /// Should never fail, and should preserve global errno/errCause.
-void ImageDestroy(Image* imgp){ ///
-  assert (imgp != NULL);
-  // Insert your code here!
-  free(&((*imgp)->pixel));
-  (*imgp)->height=NULL;
-  (*imgp)->width=NULL;
-  free(&(*imgp));
+void ImageDestroy(Image* imgp) {
+  assert(imgp != NULL);
+  
+  // Liberta o array de pixels
+  free((*imgp)->pixel);
+  
+  // Define a altura e a largura como zero
+  (*imgp)->height = 0;
+  (*imgp)->width = 0;
+  
+  // Liberta a estrutura da imagem
+  free(*imgp);
+  
+  *imgp = NULL;
 }
-
 
 /// PGM file operations
 
@@ -552,19 +558,25 @@ Image ImageMirror(Image img) { ///
 ///   The returned image has width w and height h.
 /// 
 /// On success, a new image is returned.
-/// (The caller is responsible for destroying the returned image!)
+/// (The caller is responsible for destroying the returned image!) VER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 /// On failure, returns NULL and errno/errCause are set accordingly.
 Image ImageCrop(Image img, int x, int y, int w, int h) { ///
   assert (img != NULL);
   assert (ImageValidRect(img, x, y, w, h));
   // Insert your code here!
-  Image cropImage = ImageCreate(w,h,img->maxval);
-  for(int i=y-h;i<y;++i){
-    for(int j=x; j<x+w;++j){
-      uint8 pixelValue = ImageGetPixel(img,j,i);
-      ImageSetPixel(cropImage,j,i,pixelValue);
+  Image cropImage = ImageCreate(w, h, img->maxval);
+  if (cropImage == NULL) {
+    // Lida com erro de alocação de memória
+    return NULL;
+  }
+
+  for (int i = y; i < y + h; ++i) {
+    for (int j = x; j < x + w; ++j) {
+      uint8 pixelValue = ImageGetPixel(img, j, i);
+      ImageSetPixel(cropImage, j - x, i - y, pixelValue); // Ajusta as coordenadas para a subimagem
     }
   }
+
   return cropImage;
 }
 /// Operations on two images
@@ -605,10 +617,30 @@ void ImagePaste(Image img1, int x, int y, Image img2) { ///
 /// alpha usually is in [0.0, 1.0], but values outside that interval
 /// may provide interesting effects.  Over/underflows should saturate.
 void ImageBlend(Image img1, int x, int y, Image img2, double alpha) { ///
-  assert (img1 != NULL);
-  assert (img2 != NULL);
-  assert (ImageValidRect(img1, x, y, img2->width, img2->height));
-  // Insert your code here!
+  assert(img1 != NULL);
+  assert(img2 != NULL);
+  assert(ImageValidRect(img1, x, y, img2->width, img2->height));
+
+  for (int i = 0; i < img2->height; i++) {
+    for (int j = 0; j < img2->width; j++) {
+      // Check if the target pixel position in img1 is within bounds
+      if (x + j < img1->width && y + i < img1->height) {
+        uint8 pixelValue1 = ImageGetPixel(img1, x + j, y + i);
+        uint8 pixelValue2 = ImageGetPixel(img2, j, i);
+        double blendedValue = alpha * pixelValue2 + (1.0 - alpha) * pixelValue1;
+
+        // Saturate the blended value within the valid range
+        if (blendedValue < 0) {
+          blendedValue = 0;
+        }
+        if (blendedValue > UINT8_MAX) {
+          blendedValue = UINT8_MAX;
+        }
+
+        ImageSetPixel(img1, x + j, y + i, (uint8)blendedValue);
+      }
+    }
+  }
 }
 
 /// Compare an image to a subimage of a larger image.
@@ -648,11 +680,11 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
       if (r==1){
         *px=j;
         *py=i;
-        return *px,*py;
+        return 1;
       }
     }
   }
-  return *px,*py;
+  return 0;
 }
 
 
@@ -664,5 +696,10 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
 /// The image is changed in-place.
 void ImageBlur(Image img, int dx, int dy) { ///
   // Insert your code here!
+  for(int i=0;i<img->height;i++){
+    for(int j=0;j<img->width;j++){
+
+    }
+  }
 }
 
