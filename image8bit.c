@@ -180,7 +180,7 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
   }
   img->width = width;
   img->height= height;
-  img->pixel = (uint8_t*)malloc(sizeof(uint8_t) * width * height);
+  img->pixel = (uint8*)malloc(sizeof(uint8) * width * height);
     if (img->pixel == NULL) {
         errno = 2;
         errCause="Memory Allocation Failed. Image not created.";
