@@ -440,10 +440,10 @@ void ImageThreshold(Image img, uint8 thr) { ///
       
       // Update minVal and maxVal if necessary
       if (pixelValue < thr) {
-        pixelValue = 0;
+        ImageSetPixel(img,j,i,0);
       }
-      if (pixelValue > thr) {
-          pixelValue = UINT8_MAX;
+      if (pixelValue >= thr) {
+          ImageSetPixel(img,j,i,UINT8_MAX);
       }
     }
   }
