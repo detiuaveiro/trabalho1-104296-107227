@@ -204,19 +204,18 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
 /// Should never fail, and should preserve global errno/errCause.
 void ImageDestroy(Image* imgp) {
   assert(imgp != NULL);
-  
-  // Liberta o array de pixels
-  free((*imgp)->pixel);
-  
-  // Define a altura e a largura como zero
-  (*imgp)->height = 0;
-  (*imgp)->width = 0;
-  
-  // Liberta a estrutura da imagem
-  free(*imgp);
-  
-  *imgp = NULL;
-}
+    (*imgp)->pixel = NULL;
+    free((*imgp)->pixel);
+
+    // Define altura e largura como zero
+    (*imgp)->height = 0;
+    (*imgp)->width = 0;
+
+    // Libera a estrutura da imagem
+    free(*imgp);
+    *imgp = NULL;
+  }
+
 
 /// PGM file operations
 
