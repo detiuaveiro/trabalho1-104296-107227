@@ -599,7 +599,7 @@ void ImagePaste(Image img1, int x, int y, Image img2) {
       int targetY = y + i;
 
       // Ensure target coordinates are within img1 bounds
-      if (targetX >= 0 && targetX < img1->width && targetY >= 0 && targetY < img1->height) {
+      if (ImageValidRect(img1,targetX,targetY,img2->width,img2->height)) {
         // Get pixel values from both images
         uint8_t pixelValue1 = ImageGetPixel(img1, targetX, targetY);
         uint8_t pixelValue2 = ImageGetPixel(img2, j, i);
