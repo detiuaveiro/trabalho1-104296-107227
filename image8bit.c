@@ -730,6 +730,6 @@ void ImageBlur(Image img, int dx, int dy) { ///
     }
   }
 
-  ImageDestroy((Image*)blurred_img);
+  ImageDestroy(&blurred_img);
 }
 
