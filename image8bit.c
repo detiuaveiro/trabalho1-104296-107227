@@ -501,24 +501,25 @@ void ImageBrighten(Image img, double factor) {
 /// On success, a new image is returned.
 /// (The caller is responsible for destroying the returned image!)
 /// On failure, returns NULL and errno/errCause are set accordingly.
-Image ImageRotate(Image img) { ///
-  assert (img != NULL);
+Image ImageRotate(Image img) {
+  assert(img != NULL);
   int newImgWidth = img->height;
-  int  newImgHeight = img->width;
-  Image rotatedImage = ImageCreate(newImgWidth,newImgHeight,img->maxval);
-    // Rotate the pixels by 90 degrees anti-clockwise
-    for (int i = 0; i < newImgWidth; ++i) {
-        for (int j = 0; j < newImgHeight; ++j) {
-            // Calculate the new coordinates for rotating the pixels
-            int newI = j;
-            int newJ = img->height - i - 1;
+  int newImgHeight = img->width;
+  Image rotatedImage = ImageCreate(newImgWidth, newImgHeight, img->maxval);
 
-            // Transfer the pixel values from the original image to the rotated image
-            uint8 pixelValue = ImageGetPixel(img,j,i);
-            ImageSetPixel(rotatedImage,newJ,newI,pixelValue);
-        }
+  // Rotate the pixels by 90 degrees anti-clockwise
+  for (int i = 0; i < newImgWidth; i++) {
+    for (int j = 0; j < newImgHeight; j++) {
+      // Calculate the new coordinates for rotating the pixels
+      int newI = img->width - j - 1;
+      int newJ = i;
+
+      // Transfer the pixel values from the original image to the rotated image
+      uint8_t pixelValue = ImageGetPixel(img, j, i);
+      ImageSetPixel(rotatedImage, newJ, newI, pixelValue);
     }
-    return rotatedImage;
+  }
+  return rotatedImage;
 }
 
 /// Mirror an image = flip left-right.
@@ -585,29 +586,38 @@ Image ImageCrop(Image img, int x, int y, int w, int h) { ///
 /// Paste img2 into position (x, y) of img1.
 /// This modifies img1 in-place: no allocation involved.
 /// Requires: img2 must fit inside img1 at position (x, y).
-void ImagePaste(Image img1, int x, int y, Image img2) { ///
-  assert (img1 != NULL);
-  assert (img2 != NULL);
-  assert (ImageValidRect(img1, x, y, img2->width, img2->height));
-  
-  // for cycles to go through every pixel in img1 at pos (x,y)
-  for (int i=y;i<img2->height;i++){
-    for (int j=x;j<img2->width;j++){
-      
-      //we get the pixelValues and then sum them, making sure that 0<sum<maxVal
+void ImagePaste(Image img1, int x, int y, Image img2) {
+  assert(img1 != NULL);
+  assert(img2 != NULL);
+  assert(ImageValidRect(img1, x, y, img2->width, img2->height));
 
-      uint8 pixelValue1 = ImageGetPixel(img1,j,i);
-      uint8 pixelValue2 = ImageGetPixel(img2,j-x,i-y);
-      uint8 level = pixelValue1 + pixelValue2;
-      if (level<0){level=0;}
-      if (level>UINT8_MAX){level=UINT8_MAX;}
+  // Loop through img2 dimensions
+  for (int i = 0; i < img2->height; i++) {
+    for (int j = 0; j < img2->width; j++) {
+      // Calculate coordinates for pasting onto img1
+      int targetX = x + j;
+      int targetY = y + i;
 
-      //We set the pixels in the original image to these new values
-      
-      ImageSetPixel(img1,j,i,level);
+      // Ensure target coordinates are within img1 bounds
+      if (targetX >= 0 && targetX < img1->width && targetY >= 0 && targetY < img1->height) {
+        // Get pixel values from both images
+        uint8_t pixelValue1 = ImageGetPixel(img1, targetX, targetY);
+        uint8_t pixelValue2 = ImageGetPixel(img2, j, i);
+        uint8_t level = pixelValue1 + pixelValue2;
+
+        // Ensure the summed value remains within the valid range
+        if (level < 0) {
+          level = 0;
+        }
+        if (level > UINT8_MAX) {
+          level = UINT8_MAX;
+        }
+
+        // Set the pixels in the original image to these new values
+        ImageSetPixel(img1, targetX, targetY, level);
+      }
     }
   }
-  
 }
 
 /// Blend an image into a larger image.
