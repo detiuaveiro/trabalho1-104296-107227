@@ -696,10 +696,40 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
 /// The image is changed in-place.
 void ImageBlur(Image img, int dx, int dy) { ///
   // Insert your code here!
+  Image blurred_img = ImageCreate(img->width,img->height,img->maxval);
+
+
   for(int i=0;i<img->height;i++){
     for(int j=0;j<img->width;j++){
 
+      int sum=0;
+      int count=0;
+
+      for (int di= -dy;di<=dy;di++){
+        for (int dj= -dx;dj<=dx;dj++){
+
+          if (i+di>= 0 && i+di<img->height && j+dj>=0 && j+dj<img->width){
+            sum += ImageGetPixel(img, j+dj,i+di);
+            count++;
+
+          }
+        }
+      }
+
+      int mean = count>0 ? sum/count : 0;
+      ImageSetPixel(blurred_img,j,i,mean);
+
+
+
     }
   }
+
+  for (int i =0; i<img->height;i++){
+    for (int j=0 ;j<img->width;j++){
+      ImageSetPixel(img,j,i,ImageGetPixel(blurred_img,j,i));
+    }
+  }
+
+  ImageDestroy(blurred_img);
 }
 
