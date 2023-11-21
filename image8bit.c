@@ -180,6 +180,7 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
   }
   img->width = width;
   img->height= height;
+  img->maxval=maxval;
   img->pixel = (uint8*)malloc(sizeof(uint8) * width * height);
     if (img->pixel == NULL) {
         errno = 2;
