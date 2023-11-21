@@ -468,7 +468,7 @@ void ImageBrighten(Image img, double factor) { ///
 
       uint8 pixelValue = ImageGetPixel(img,j,i);
       int level = pixelValue * factor;
-      if (level==0){level=0;}
+      if (level<0){level=0;}
       if (level>UINT8_MAX){level=UINT8_MAX;}
 
       //Set the pixel to this new value
