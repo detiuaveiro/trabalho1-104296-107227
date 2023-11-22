@@ -706,40 +706,33 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
 /// The image is changed in-place.
 void ImageBlur(Image img, int dx, int dy) { ///
   // Insert your code here!
-  Image blurred_img = ImageCreate(img->width,img->height,img->maxval);
 
+  // Iterate over each pixel in the image
+  for (int i = 0; i < img->height; i++) {
+    for (int j = 0; j < img->width; j++) {
+      double sum = 0.0;
+      double weightSum = 0.0;
 
-  for(int i=0;i<img->height;i++){
-    for(int j=0;j<img->width;j++){
-
-      int sum=0;
-      int count=0;
-
-      for (int di= -dy;di<=dy;di++){
-        for (int dj= -dx;dj<=dx;dj++){
-
-          if (i+di>= 0 && i+di<img->height && j+dj>=0 && j+dj<img->width){
-            sum += ImageGetPixel(img, j+dj,i+di);
-            count++;
-
+      // Iterate over the neighboring pixels within the specified blur radius
+      for (int di = -dy; di <= dy; di++) {
+        for (int dj = -dx; dj <= dx; dj++) {
+          // Check if the neighboring pixel is within the image boundaries
+          if (i + di >= 0 && i + di < img->height && j + dj >= 0 && j + dj < img->width) {
+            double weight = 1.0 / ((di * di) + (dj * dj) + 1.0); // Weight based on distance
+            sum += weight * ImageGetPixel(img, j + dj, i + di);
+            weightSum += weight;
           }
         }
       }
 
-      int mean = count>0 ? sum/count : 0;
-      ImageSetPixel(blurred_img,j,i,mean);
+      // Calculate the weighted average
+      int blurredValue = (int)(sum / weightSum + 0.5); // Round to the nearest integer
 
-
-
+      // Set the pixel directly in the original image using ImageSetPixel
+      ImageSetPixel(img, j, i, blurredValue);
     }
   }
-
-  for (int i =0; i<img->height;i++){
-    for (int j=0 ;j<img->width;j++){
-      ImageSetPixel(img,j,i,ImageGetPixel(blurred_img,j,i));
-    }
-  }
-
-  ImageDestroy(&blurred_img);
 }
+
+
 
