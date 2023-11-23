@@ -172,7 +172,7 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
   assert (height >= 0);
   assert (0 < maxval && maxval <= PixMax);
   // Insert your code here!
-  Image img = (Image)malloc(sizeof(Image));
+  Image img = (Image)malloc(sizeof(struct image));
   if (img==NULL){
     errno=1;
     errCause="Memory Allocation Failed. Image not created.";
@@ -205,7 +205,7 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
 /// Should never fail, and should preserve global errno/errCause.
 void ImageDestroy(Image* imgp) {
   assert(imgp != NULL);
-    (*imgp)->pixel = NULL;
+    //(*imgp)->pixel = NULL;
     free((*imgp)->pixel);
 
     // Define altura e largura como zero
@@ -559,7 +559,7 @@ Image ImageMirror(Image img) { ///
 ///   The returned image has width w and height h.
 /// 
 /// On success, a new image is returned.
-/// (The caller is responsible for destroying the returned image!) VER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/// (The caller is responsible for destroying the returned image!) VER
 /// On failure, returns NULL and errno/errCause are set accordingly.
 Image ImageCrop(Image img, int x, int y, int w, int h) { ///
   assert (img != NULL);
@@ -601,20 +601,9 @@ void ImagePaste(Image img1, int x, int y, Image img2) {
       // Ensure target coordinates are within img1 bounds
       if (ImageValidRect(img1,targetX,targetY,img2->width,img2->height)) {
         // Get pixel values from both images
-        uint8_t pixelValue1 = ImageGetPixel(img1, targetX, targetY);
-        uint8_t pixelValue2 = ImageGetPixel(img2, j, i);
-        uint8_t level = pixelValue1 + pixelValue2;
-
-        // Ensure the summed value remains within the valid range
-        if (level < 0) {
-          level = 0;
-        }
-        if (level > UINT8_MAX) {
-          level = UINT8_MAX;
-        }
-
+        uint8 pixelValue2 = ImageGetPixel(img2, j, i);
         // Set the pixels in the original image to these new values
-        ImageSetPixel(img1, targetX, targetY, level);
+        ImageSetPixel(img1, targetX, targetY, pixelValue2);
       }
     }
   }
@@ -631,22 +620,23 @@ void ImageBlend(Image img1, int x, int y, Image img2, double alpha) { ///
   assert(img2 != NULL);
   assert(ImageValidRect(img1, x, y, img2->width, img2->height));
 
-  for (int i = 0; i < img2->height; i++) {
+   for (int i = 0; i < img2->height; i++) {
     for (int j = 0; j < img2->width; j++) {
-      // Check if the target pixel position in img1 is within bounds
-      if (x + j < img1->width && y + i < img1->height) {
-        uint8 pixelValue1 = ImageGetPixel(img1, x + j, y + i);
+      // Calculate coordinates for pasting onto img1
+      int targetX = x + j;
+      int targetY = y + i;
+
+      // Ensure target coordinates are within img1 bounds
+      if (targetX >= 0 && targetX < img1->width && targetY >= 0 && targetY < img1->height) {
+        // Get pixel values from both images
+        uint8 pixelValue1 = ImageGetPixel(img1, targetX, targetY);
         uint8 pixelValue2 = ImageGetPixel(img2, j, i);
-        double blendedValue = alpha * pixelValue2 + (1.0 - alpha) * pixelValue1;
-
+        uint8 blendedValue = (int)((pixelValue2*alpha+(1-alpha)*pixelValue1)+0.5);
+        
+        // Set the pixels in the original image to these new values
+        
         // Saturate the blended value within the valid range
-        if (blendedValue < 0) {
-          blendedValue = 0;
-        }
-        if (blendedValue > UINT8_MAX) {
-          blendedValue = UINT8_MAX;
-        }
-
+       
         ImageSetPixel(img1, x + j, y + i, (uint8)blendedValue);
       }
     }
@@ -704,35 +694,32 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
 /// Each pixel is substituted by the mean of the pixels in the rectangle
 /// [x-dx, x+dx]x[y-dy, y+dy].
 /// The image is changed in-place.
-void ImageBlur(Image img, int dx, int dy) { ///
-  // Insert your code here!
-
+void ImageBlur(Image img, int dx, int dy) {
   // Iterate over each pixel in the image
+  //Image copyImage=ImageCrop(img,0,0,img->height,img->width);
+  
   for (int i = 0; i < img->height; i++) {
     for (int j = 0; j < img->width; j++) {
-      double sum = 0.0;
-      double weightSum = 0.0;
+      int sum = 0;
+      int count = 0;
 
       // Iterate over the neighboring pixels within the specified blur radius
-      for (int di = -dy; di <= dy; di++) {
-        for (int dj = -dx; dj <= dx; dj++) {
+      for (int di = 0; di < 2*dy+1; di++) {
+        for (int dj =0; dj < 2*dx+1; dj++) {
           // Check if the neighboring pixel is within the image boundaries
           if (i + di >= 0 && i + di < img->height && j + dj >= 0 && j + dj < img->width) {
-            double weight = 1.0 / ((di * di) + (dj * dj) + 1.0); // Weight based on distance
-            sum += weight * ImageGetPixel(img, j + dj, i + di);
-            weightSum += weight;
+            sum += ImageGetPixel(img, j + dj, i + di);
+            count++;
           }
         }
       }
 
-      // Calculate the weighted average
-      int blurredValue = (int)(sum / weightSum + 0.5); // Round to the nearest integer
+      // Calculate the mean value
+      //int mean = count > 0 ? sum / count : 0;
+      int mean = (double)sum/count+0.5;
 
       // Set the pixel directly in the original image using ImageSetPixel
-      ImageSetPixel(img, j, i, blurredValue);
+      ImageSetPixel(img, j, i, mean);
     }
   }
 }
-
-
-
