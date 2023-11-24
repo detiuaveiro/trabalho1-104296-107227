@@ -696,7 +696,7 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
 /// The image is changed in-place.
 void ImageBlur(Image img, int dx, int dy) {
   // Iterate over each pixel in the image
-  //Image copyImage=ImageCrop(img,0,0,img->height,img->width);
+  Image copyImage=ImageCrop(img,0,0,img->height,img->width);
   
   for (int i = 0; i < img->height; i++) {
     for (int j = 0; j < img->width; j++) {
@@ -704,11 +704,11 @@ void ImageBlur(Image img, int dx, int dy) {
       int count = 0;
 
       // Iterate over the neighboring pixels within the specified blur radius
-      for (int di = 0; di < 2*dy+1; di++) {
-        for (int dj =0; dj < 2*dx+1; dj++) {
+      for (int di =-dy; di <= dy; di++) {
+        for (int dj =-dx;dj <= dx; dj++) {
           // Check if the neighboring pixel is within the image boundaries
-          if (i + di >= 0 && i + di < img->height && j + dj >= 0 && j + dj < img->width) {
-            sum += ImageGetPixel(img, j + dj, i + di);
+          if (ImageValidPos(copyImage,i+di,j+dj)) {
+            sum += ImageGetPixel(copyImage, j + dj, i + di);
             count++;
           }
         }
