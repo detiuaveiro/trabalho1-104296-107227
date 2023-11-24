@@ -720,6 +720,8 @@ void ImageBlur(Image img, int dx, int dy) {
 
       // Set the pixel directly in the original image using ImageSetPixel
       ImageSetPixel(img, j, i, mean);
+      
     }
   }
+  ImageDestroy(&copyImage);
 }
