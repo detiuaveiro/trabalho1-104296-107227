@@ -145,13 +145,15 @@ static int check(int condition, const char* failmsg) {
 /// Currently, simply calibrate instrumentation and set names of counters.
 void ImageInit(void) { ///
   InstrCalibrate();
-  InstrName[0] = "pixmem";  // InstrCount[0] will count pixel array acesses
+  InstrName[0] = "pixmem"; 
+  InstrName[1] = "itmem";// InstrCount[0] will count pixel array acesses
   // Name other counters here...
   
 }
 
 // Macros to simplify accessing instrumentation counters:
 #define PIXMEM InstrCount[0]
+#define ITMEM InstrCount[1]
 // Add more macros here...
 
 // TIP: Search for PIXMEM or InstrCount to see where it is incremented!
@@ -390,6 +392,7 @@ static inline int G(Image img, int x, int y) {
 uint8   ImageGetPixel(Image img, int x, int y) { ///
   assert (img != NULL);
   assert (ImageValidPos(img, x, y));
+  ITMEM++;
   PIXMEM += 1;  // count one pixel access (read)
   return img->pixel[G(img, x, y)];
 } 
@@ -398,6 +401,7 @@ uint8   ImageGetPixel(Image img, int x, int y) { ///
 void ImageSetPixel(Image img, int x, int y, uint8 level) { ///
   assert (img != NULL);
   assert (ImageValidPos(img, x, y));
+  ITMEM++;
   PIXMEM += 1;  // count one pixel access (store)
   img->pixel[G(img, x, y)] = level;
 } 
@@ -647,16 +651,19 @@ void ImageBlend(Image img1, int x, int y, Image img2, double alpha) { ///
 /// Returns 1 (true) if img2 matches subimage of img1 at pos (x, y).
 /// Returns 0, otherwise.
 int ImageMatchSubImage(Image img1, int x, int y, Image img2) { ///
-  assert (img1 != NULL);
-  assert (img2 != NULL);
-  assert (ImageValidPos(img1, x, y));
-  // Insert your code here!
-  Image img1_cropped = ImageCrop (img1,x,y,img2->width,img2->height);
-  for (int i=0;i<img1_cropped->height;i++){
-    for (int j=0;j<img1_cropped->width;j++){
-      uint8 pixelValue1 = ImageGetPixel(img1_cropped,j,i);
-      uint8 pixelValue2 = ImageGetPixel(img2,j,i);
-      if (pixelValue1 != pixelValue2){
+  assert(img1 != NULL);
+  assert(img2 != NULL);
+  assert(ImageValidPos(img1, x, y));
+
+  // Ajuste nas coordenadas para garantir o recorte correto da subimagem
+  Image img1_cropped = ImageCrop(img1, x, y, x + img2->width, y + img2->height);
+  
+  for (int i = 0; i < img2->height; i++) {
+    for (int j = 0; j < img2->width; j++) {
+      ITMEM++;
+      uint8 pixelValue1 = ImageGetPixel(img1_cropped, j, i);
+      uint8 pixelValue2 = ImageGetPixel(img2, j, i);
+      if (pixelValue1 != pixelValue2) {
         return 0;
       }
     }
@@ -671,11 +678,11 @@ int ImageMatchSubImage(Image img1, int x, int y, Image img2) { ///
 int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
   assert (img1 != NULL);
   assert (img2 != NULL);
-  int ny = img1->height - img2->height;   //nx and ny are the number of operations
-  int nx = img1->width - img2->width;     //we will need to run while keeping the image2
+  //nx and ny are the number of operation    //we will need to run while keeping the image2
   // Insert your code here!               inside image1
-  for (int i=0;i<ny;i++){
-    for (int j=0;j<nx;j++){
+  for (int i=0;i<img2->height;i++){
+    for (int j=0;j<img2->width;j++){
+      ITMEM+=1;
       int r = ImageMatchSubImage(img1,j,i,img2);
       if (r==1){
         *px=j;
@@ -706,6 +713,7 @@ void ImageBlur(Image img, int dx, int dy) {
       // Iterate over the neighboring pixels within the specified blur radius
       for (int di =-dy; di <= dy; di++) {
         for (int dj =-dx;dj <= dx; dj++) {
+           ITMEM+=1;
           // Check if the neighboring pixel is within the image boundaries
           if (ImageValidPos(copyImage,i+di,j+dj)) {
             sum += ImageGetPixel(copyImage, j + dj, i + di);

@@ -26,26 +26,37 @@ int main(int argc, char* argv[]) {
 
   ImageInit();
   
-  printf("# LOAD image");
+  printf("# LOAD image\n");
   InstrReset(); // to reset instrumentation
   Image img1 = ImageLoad(argv[1]);
   if (img1 == NULL) {
     error(2, errno, "Loading %s: %s", argv[1], ImageErrMsg());
   }
-  InstrPrint(); // to print instrumentation
+   // to print instrumentation
 
   // Try changing the behaviour of the program by commenting/uncommenting
   // the appropriate lines.
 
-  //img2 = ImageCrop(img1, ImageWidth(img1)/4, ImageHeight(img1)/4, ImageWidth(img1)/2, ImageHeight(img1)/2);
-  Image img2 = ImageRotate(img1);
-  if (img2 == NULL) {
-    error(2, errno, "Rotating img2: %s", ImageErrMsg());
-  }
-
+  Image img2 = ImageCrop(img1,0,0,ImageWidth(img1), ImageHeight(img1));
+  //Image img2 = ImageRotate(img1);
+  //if (img2 == NULL) {
+    //error(2, errno, "Rotating img2: %s", ImageErrMsg());
+  //}
+  //ImageBrighten(img2, 1.3);
+  
   //ImageNegative(img2);
+
   //ImageThreshold(img2, 100);
-  ImageBrighten(img2, 1.3);
+  //int x;
+  //int y; 
+  
+  InstrReset(); 
+  ImageBlur(img1,4,4);
+  //ImageLocateSubImage(img1,&x,&y,img2);
+  
+  InstrPrint();
+
+  
 
   if (ImageSave(img2, argv[2]) == 0) {
     error(2, errno, "%s: %s", argv[2], ImageErrMsg());
@@ -55,4 +66,3 @@ int main(int argc, char* argv[]) {
   ImageDestroy(&img2);
   return 0;
 }
-
